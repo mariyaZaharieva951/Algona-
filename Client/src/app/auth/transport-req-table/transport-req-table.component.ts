@@ -32,22 +32,33 @@ export class TransportReqTableComponent implements OnInit, OnDestroy {
   }
 
   getData(): void {
-    this.subscription = this.apiService.getSpeditionRequests().subscribe({
+    this.subscription = this.apiService.getTransportRequests().subscribe({
       next: (data) => {
-        this.transportRequests = data;
+        console.log(data);
+
+        const mappedDataOne = data.map((x) => {
+          x.date = `${x.fromDate} to ${x.toDate}`
+          return x
+        })
+        const mappedDataTwo = mappedDataOne.map((x) => {
+          x.destination = `${x.fromAddress} to ${x.toAddress}`
+          return x
+        })
+        this.transportRequests = mappedDataTwo;
+        this.sortedArray = this.transportRequests.sort((a, b) => {
+          const statusOrder: any = { 'Waiting for approval': 1, 'Approved': 2, 'Complete': 3, 'Rejected': 4 };
+          return statusOrder[a.status] - statusOrder[b.status];
+        })
+
+        this.totalPages = Math.ceil(this.sortedArray.length / 5);
+        this.paginatedArray = this.sortedArray.slice(0, 5);
       },
       error: (err) => {
         this.router.navigate(['/404']);
       },
     });
 
-    this.sortedArray = this.transportRequests.sort((a, b) => {
-      const statusOrder: any = { 'Waiting for approval': 1, 'Approved': 2, 'Complete': 3, 'Rejected': 4 };
-      return statusOrder[a.status] - statusOrder[b.status];
-    })
 
-    this.totalPages = Math.ceil(this.sortedArray.length / 5);
-    this.paginatedArray = this.sortedArray.slice(0, 5);
   }
 
 
@@ -82,8 +93,18 @@ export class TransportReqTableComponent implements OnInit, OnDestroy {
       status: 'Approved'
     }
 
-    this.apiService.updateSpeditionRequest(payload)
-    this.getData()
+    this.apiService.updateTransportRequest(payload).subscribe(
+      {
+        next: (response) => {
+          if (response.status === 200) {
+            this.getData()
+          }
+        },
+        error: (error) => {
+          this.router.navigate(['/404']);
+        }
+      }
+    )
 
   }
 
@@ -97,8 +118,18 @@ export class TransportReqTableComponent implements OnInit, OnDestroy {
       status: 'Complete'
     }
 
-    this.apiService.updateSpeditionRequest(payload)
-    this.getData()
+    this.apiService.updateTransportRequest(payload).subscribe(
+      {
+        next: (response) => {
+          if (response.status === 200) {
+            this.getData()
+          }
+        },
+        error: (error) => {
+          this.router.navigate(['/404']);
+        }
+      }
+    )
 
   }
 
@@ -113,8 +144,18 @@ export class TransportReqTableComponent implements OnInit, OnDestroy {
       status: 'Rejected'
     }
 
-    this.apiService.updateSpeditionRequest(payload)
-    this.getData()
+    this.apiService.updateTransportRequest(payload).subscribe(
+      {
+        next: (response) => {
+          if (response.status === 200) {
+            this.getData()
+          }
+        },
+        error: (error) => {
+          this.router.navigate(['/404']);
+        }
+      }
+    )
 
   }
 
